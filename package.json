@@ -1,0 +1,32 @@
+{
+  "name": "oro-sftp",
+  "version": "1.0.0",
+  "description": "Class OroSftp is a wrapper of ssh2-sftp-client to work as promises async/await.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "ftp",
+    "sftp",
+    "promise",
+    "async/await"
+  ],
+  "author": "Carlos Oropesa <carlos@oropensando.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oropesa/oro-sftp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oropesa/oro-sftp/issues"
+  },
+  "homepage": "https://github.com/oropesa/oro-sftp#readme",
+  "dependencies": {
+    "oro-functions": "^1.1.4",
+    "ssh2-sftp-client": "^8.1.0"
+  },
+  "devDependencies": {
+    "jest": "^28.1.0"
+  }
+}
