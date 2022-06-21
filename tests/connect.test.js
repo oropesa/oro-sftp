@@ -15,7 +15,7 @@ describe('get OSFtp parent clientFTP', () => {
         const ftpClient = new OSFtp( FTPCONFIG_DEFAULT );
 
         let clientFTP = ftpClient.getClient();
-        expect( clientFTP.constructor.name ).toBe( 'SftpClient' );
+        expect( Ofn.type( clientFTP, true ) ).toBe( 'SftpClient' );
     } );
 });
 

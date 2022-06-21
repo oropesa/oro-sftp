@@ -1,3 +1,7 @@
+## 1.0.3 / 2022-06-21
+* Updated lib `oro-functions` to `v1.1.7`.
+* Updated lib-dev `jest` to `v28.1.1`.
+
 ## 1.0.0 / 2022-05-26
 * Added `MIT License`.
 * Added _unit testing_ `Jest`.
