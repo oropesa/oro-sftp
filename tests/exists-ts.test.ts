@@ -1,11 +1,11 @@
-const OSFtp = require( '../index' );
-const Ofn = require( 'oro-functions' );
+import OSFtp from '../index';
+import Ofn from 'oro-functions';
 
 //
 
 const FTPCONFIG_DEFAULT = Ofn.getFileJsonRecursivelySync( `${__dirname}/config.json` );
 
-const FTP_FOLDER = 'test-exists';
+const FTP_FOLDER = 'test-exists-ts';
 
 beforeAll(async () => {
     const ftpClient = new OSFtp( FTPCONFIG_DEFAULT );
@@ -29,7 +29,7 @@ describe('exists OSFtp', () => {
     test( 'exists and no connected' , async () => {
         const ftpClient = new OSFtp( FTPCONFIG_DEFAULT );
 
-        const response = await ftpClient.exists();
+        const response = await ftpClient.exists( undefined );
 
         expect( response.status ).toBe( false );
         if( response.status === true ) {

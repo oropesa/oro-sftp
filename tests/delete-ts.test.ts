@@ -1,11 +1,11 @@
-const OSFtp = require( '../index' );
-const Ofn = require( 'oro-functions' );
+import OSFtp from '../index';
+import Ofn from 'oro-functions';
 
 //
 
 const FTPCONFIG_DEFAULT = Ofn.getFileJsonRecursivelySync( `${__dirname}/config.json` );
 
-const FTP_FOLDER = 'test-delete';
+const FTP_FOLDER = 'test-delete-ts';
 
 beforeAll(async () => {
     const ftpClient = new OSFtp( FTPCONFIG_DEFAULT );
@@ -31,7 +31,7 @@ describe('delete OSFtp', () => {
     test( 'delete and no connected' , async () => {
         const ftpClient = new OSFtp( FTPCONFIG_DEFAULT );
 
-        const response = await ftpClient.delete();
+        const response = await ftpClient.delete( undefined );
 
         expect( response.status ).toBe( false );
         if( response.status === true ) {

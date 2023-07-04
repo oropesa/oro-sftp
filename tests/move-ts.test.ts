@@ -1,5 +1,5 @@
-const OSFtp = require( '../index' );
-const Ofn = require( 'oro-functions' );
+import OSFtp from '../index';
+import Ofn from 'oro-functions';
 
 //
 
@@ -29,7 +29,7 @@ describe('move OSFtp', () => {
     test( 'move and no connected' , async () => {
         const ftpClient = new OSFtp( FTPCONFIG_DEFAULT );
 
-        const response = await ftpClient.move();
+        const response = await ftpClient.move( undefined, undefined );
 
         expect( response.status ).toBe( false );
         if( response.status === true ) {

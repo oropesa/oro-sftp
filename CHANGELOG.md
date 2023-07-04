@@ -1,3 +1,16 @@
+## 1.1.0 / 2023-07-04
+* Added `TS` support.
+* Added _ts tests_.
+* Added `package-lock.json`.
+* Improved _tests_.
+* Improved _readme_.
+* Improved _error messages_ and added param `code` in _responseKO error_.
+* Fixed reducing duration of _connection timeout_ when fails.
+* Fixed method `delete` allowing to remove folder (as `rmdir`) when it's empty.
+* Updated lib `oro-functions` to `v1.3.2`.
+* Updated lib `ssh2-sftp-client` to `v9.1.0`.
+* Updated lib-dev `jest` to `v29.5.0`.
+
 ## 1.0.3 / 2022-06-21
 * Updated lib `oro-functions` to `v1.1.7`.
 * Updated lib-dev `jest` to `v28.1.1`.

@@ -1,5 +1,5 @@
-const OSFtp = require( '../index' );
-const Ofn = require( 'oro-functions' );
+import OSFtp, { OSFtpConfig } from '../index';
+import Ofn from 'oro-functions';
 
 //
 
@@ -67,7 +67,8 @@ describe('init Bad OSFtp', () => {
         expect( connected.tryAgain ).toBe( true );
         expect( connected.error.code ).toBe( 'ENTIMEOUT' );
         expect( connected.error.msg ).toBe(
-            `SFTP Connect failed: getConnection: Timed out while waiting for handshake.` );
+            `SFTP Connect failed: getConnection: Timed out while waiting for handshake.`
+        );
     } );
 });
 
@@ -89,22 +90,22 @@ describe('init OSFtp and disconnect when error', () => {
 
         const connected = await ftpClient.connect();
         await ftpClient.rmdir( 'connect2', false, true );
-        const mkdir = await ftpClient.mkdir( 'connect2' );
+        const mkdir = await ftpClient.mkdir( 'ts-connect2' );
 
         expect( connected.status ).toBe( true );
         expect( mkdir.status ).toBe( false );
     } );
 
     test( 'init and avoid auto-disconnect', async () => {
-        const config = Ofn.cloneObject( FTPCONFIG_DEFAULT );
+        const config: OSFtpConfig = Ofn.cloneObject( FTPCONFIG_DEFAULT );
         config.disconnectWhenError = false;
 
         const ftpClient = new OSFtp( config );
 
         const connected = await ftpClient.connect();
-        await ftpClient.rmdir( 'connect1', false, true );
-        const mkdir = await ftpClient.mkdir( 'connect1' );
-        await ftpClient.rmdir( 'connect1' );
+        await ftpClient.rmdir( 'ts-connect1', false, true );
+        const mkdir = await ftpClient.mkdir( 'ts-connect1' );
+        await ftpClient.rmdir( 'ts-connect1' );
         await ftpClient.disconnect();
 
         expect( connected.status ).toBe( true );

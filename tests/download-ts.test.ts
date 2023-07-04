@@ -1,12 +1,12 @@
-const OSFtp = require( '../index' );
-const fsExtra = require( 'fs-extra' );
-const Ofn = require( 'oro-functions' );
+import OSFtp from '../index';
+import fsExtra from 'fs-extra';
+import Ofn from 'oro-functions';
 
 //
 
 const FTPCONFIG_DEFAULT = Ofn.getFileJsonRecursivelySync( `${__dirname}/config.json` );
 
-const FTP_FOLDER = 'test-download';
+const FTP_FOLDER = 'test-download-ts';
 
 beforeAll(async () => {
     const ftpClient = new OSFtp( FTPCONFIG_DEFAULT );
@@ -14,6 +14,7 @@ beforeAll(async () => {
     await ftpClient.rmdir( FTP_FOLDER, true );
     await ftpClient.mkdir( `${FTP_FOLDER}/test`, true );
     await ftpClient.upload( `${__dirname}/zpython2.pdf`, `${FTP_FOLDER}/python2.pdf` );
+    await ftpClient.upload( `${__dirname}/zpython2.pdf`, `${FTP_FOLDER}/python2-ts.pdf` );
     await ftpClient.upload( `${__dirname}/zpython2.pdf`, `${FTP_FOLDER}/test/python2-copy.pdf` );
     await ftpClient.disconnect();
 });
@@ -33,7 +34,7 @@ describe('download OSFtp', () => {
 
         const response = await ftpClient.download(
             `${FTP_FOLDER}/python2.pdf`,
-            `${__dirname}/zpython-copy.pdf`
+            `${__dirname}/zpython-copy-ts.pdf`
         );
 
         expect( response.status ).toBe( false );
@@ -53,7 +54,7 @@ describe('download OSFtp', () => {
         await ftpClient.connect();
         const response = await ftpClient.download(
             `${FTP_FOLDER}/pthon2.pdf`,
-            `${__dirname}/zpython-copy.pdf`
+            `${__dirname}/zpython-copy-ts.pdf`
         );
 
         expect( response.status ).toBe( false );
@@ -71,7 +72,7 @@ describe('download OSFtp', () => {
         await ftpClient.connect();
         const response = await ftpClient.download(
             `${FTP_FOLDER}/python2.pdf`,
-            `${__dirname}/chacho/zpython-copy.pdf`
+            `${__dirname}/chacho/zpython-copy-ts.pdf`
         );
 
         expect( response.status ).toBe( false );
@@ -88,22 +89,20 @@ describe('download OSFtp', () => {
 
         await ftpClient.connect();
         const response = await ftpClient.download(
-            `${FTP_FOLDER}/python2.pdf`
+            `${FTP_FOLDER}/python2-ts.pdf`
         );
         await ftpClient.disconnect();
 
-        const existsFile = await fsExtra.exists( `${process.cwd()}/python2.pdf` );
-        if( existsFile ) { await fsExtra.remove( `python2.pdf` ); }
+        const existsFile = await fsExtra.exists( `${process.cwd()}/python2-ts.pdf` );
+        if( existsFile ) { await fsExtra.remove( `python2-ts.pdf` ); }
 
         expect( response.status ).toBe( true );
         if( response.status === false ) {
             return;
         }
 
-        expect( response.filename ).toBe( 'python2.pdf' );
-        expect( response.filepath ).toBe( Ofn.sanitizePath(
-            `${process.cwd()}/python2.pdf`
-        ) );
+        expect( response.filename ).toBe( 'python2-ts.pdf' );
+        expect( response.filepath ).toBe( Ofn.sanitizePath( `${process.cwd()}/python2-ts.pdf` ) );
         expect( existsFile ).toBe( true );
     } );
 
@@ -113,20 +112,20 @@ describe('download OSFtp', () => {
         await ftpClient.connect();
         const response = await ftpClient.download(
             `${FTP_FOLDER}/python2.pdf`,
-            `${__dirname}/zpython-copy.pdf`
+            `${__dirname}/zpython-copy-ts.pdf`
         );
         await ftpClient.disconnect();
 
-        const existsFile = await fsExtra.exists( `${__dirname}/zpython-copy.pdf` );
-        if( existsFile ) { await fsExtra.remove( `${__dirname}/zpython-copy.pdf` ); }
+        const existsFile = await fsExtra.exists( `${__dirname}/zpython-copy-ts.pdf` );
+        if( existsFile ) { await fsExtra.remove( `${__dirname}/zpython-copy-ts.pdf` ); }
 
         expect( response.status ).toBe( true );
         if( response.status === false ) {
             return;
         }
 
-        expect( response.filename ).toBe( 'zpython-copy.pdf' );
-        expect( response.filepath ).toBe( Ofn.sanitizePath( `${__dirname}/zpython-copy.pdf` ) );
+        expect( response.filename ).toBe( 'zpython-copy-ts.pdf' );
+        expect( response.filepath ).toBe( Ofn.sanitizePath( `${__dirname}/zpython-copy-ts.pdf` ) );
         expect( existsFile ).toBe( true );
     } );
 
@@ -136,21 +135,21 @@ describe('download OSFtp', () => {
         await ftpClient.connect();
         const response = await ftpClient.download(
             `${FTP_FOLDER}/python2.pdf`,
-            `../python2-copy.pdf`
+            `../zpython2-copy-ts.pdf`
         );
         await ftpClient.disconnect();
 
-        const existsFile = await fsExtra.exists( `../python2-copy.pdf` );
-        if( existsFile ) { await fsExtra.remove( `../python2-copy.pdf` ); }
+        const existsFile = await fsExtra.exists( `../zpython2-copy-ts.pdf` );
+        if( existsFile ) { await fsExtra.remove( `../zpython2-copy-ts.pdf` ); }
 
         expect( response.status ).toBe( true );
         if( response.status === false ) {
             return;
         }
 
-        expect( response.filename ).toBe( 'python2-copy.pdf' );
+        expect( response.filename ).toBe( 'zpython2-copy-ts.pdf' );
         expect( response.filepath ).toBe(
-            Ofn.sanitizePath( `${Ofn.getFolderByPath( process.cwd() )}/python2-copy.pdf` )
+            Ofn.sanitizePath( `${Ofn.getFolderByPath( process.cwd() )}/zpython2-copy-ts.pdf` )
         );
         expect( existsFile ).toBe( true );
     } );

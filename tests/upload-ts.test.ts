@@ -1,12 +1,12 @@
-const OSFtp = require( '../index' );
-const fsExtra = require( 'fs-extra' );
-const Ofn = require( 'oro-functions' );
+import OSFtp from '../index';
+import fsExtra from 'fs-extra';
+import Ofn from 'oro-functions';
 
 //
 
 const FTPCONFIG_DEFAULT = Ofn.getFileJsonRecursivelySync( `${__dirname}/config.json` );
 
-const FTP_FOLDER = 'test-upload';
+const FTP_FOLDER = 'test-upload-ts';
 
 beforeAll(async () => {
     const ftpClient = new OSFtp( FTPCONFIG_DEFAULT );
