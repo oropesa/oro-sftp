@@ -1,3 +1,7 @@
+## 2.0.1 / 2023-11-02
+* Updated _dev_ libs:
+  * `@types/ssh2-sftp-client` to `v9.0.2`.
+
 ## 2.0.0 / 2023-11-02
 **NOTE:**<br>
 ⚠️ It's not valid anymore:<br>`const OSFtp = require('oro-sftp')`,<br>
