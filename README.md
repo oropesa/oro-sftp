@@ -1,10 +1,10 @@
 # Oro Sftp
 
-Class OSftp is a wrapper of ssh2-sftp-client to simplify their use.
+OSftp Class is a wrapper of ssh2-sftp-client to simplify their use.
 
-[ssh2-sftp-client](https://www.npmjs.com/package/ssh2-sftp-client) is a SFTP client for node.js, a wrapper around SSH2 which provides a high level convenience abstraction as well as a Promise based API.
+[ssh2-sftp-client](https://www.npmjs.com/package/ssh2-sftp-client) is a SFTP client module for node.js that provides an asynchronous interface for communicating with a SFTP server.
 
-If you need the same wrapper using FTP, then use [OroFtp](https://www.npmjs.com/package/oro-ftp)
+To have the same interface using FTP, you can utilize the OroFtp class available through [OroFtp](https://www.npmjs.com/package/oro-ftp)
 
 ```shell
 npm install oro-sftp
@@ -13,16 +13,17 @@ npm install oro-sftp
 Example:
 
 ```js
-const OSftp = require( 'oro-sftp' );
+// cjs
+const { OSftp } = require( 'oro-sftp' );
 
-// ts
+// mjs, ts
 import OSFtp from 'oro-sftp';
 
 const sftpClient = new OSftp( {
-    host: 'custom-server.com', 
-    port: 22, 
-    user: 'custom-user', 
-    password: 'custom-password' 
+  host: 'custom-server.com', 
+  port: 22, 
+  user: 'custom-user', 
+  password: 'custom-password' 
 } );
 
 const sftpUpload = await sftpClient.uploadOne( `./folder-from/filename`, 'folder-to/filename' );
@@ -57,22 +58,23 @@ _responseKO_ is an object with 3 fields:
 
 ````ts
 interface responseKO {
-    status: false;
-    error: {
-        msg: string;         // explaining the error
-        code: OSFtpErrorCode; // string
-        // ...               // other data, it depends on method error
-    },
-    tryAgain: boolean;
+  status: false;
+  error: {
+    msg: string;         // explaining the error
+    code: OSFtpErrorCode; // string
+    // ...               // other data, it depends on method error
+  },
+  tryAgain: boolean;
 }
 
 type OSFtpErrorCode =
-    | 'UNCONNECTED'
-    | 'ENOTFOUND'
-    | 'ENTIMEOUT'
-    | 'ENOENT'
-    | 'EEXIST'
-    | 'ENOTEMPTY';
+  | 'ECONNREFUSED'
+  | 'UNCONNECTED'
+  | 'ENOTFOUND'
+  | 'ENTIMEOUT'
+  | 'ENOENT'
+  | 'EEXIST'
+  | 'ENOTEMPTY';
 ````
 
 ### new OSftp()
@@ -80,12 +82,12 @@ type OSFtpErrorCode =
 new OSFtp( config?: OSFtpConfig );
 
 type OSFtpConfig = SftpClient.ConnectOptions &  {
-    host?: string;
-    port?: number;
-    user?: string;
-    password?: string;
-    readyTimeout?: number;          // def: 3000
-    disconnectWhenError?: boolean;  // def: true
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
+  readyTimeout?: number;          // def: 3000
+  disconnectWhenError?: boolean;  // def: true
 }
 ```
 
@@ -96,12 +98,12 @@ In addition, `config` has param `disconnectWhenError` (default `true`), so when 
 ```js
 const OSftp = require( 'oro-sftp' );
 const config = {
-    host: 'custom-server.com',
-    port: 22,
-    user: 'custom-user',
-    password: 'custom-password',
-    readyTimeout: 3000,
-    disconnectWhenError: true
+  host: 'custom-server.com',
+  port: 22,
+  user: 'custom-user',
+  password: 'custom-password',
+  readyTimeout: 3000,
+  disconnectWhenError: true
 }
 
 const sftpClient = new OSftp( config );
@@ -125,24 +127,23 @@ const ssh2SftpClient = await sftpClient.getClient();
 await sftpClient.connect( config?: OSFtpConfig ) => Promise<OSFtpConnectResponse>;
 
 type OSFtpConfig = PromiseFtp.Options &  {
-    host?: string;
-    port?: number;
-    user?: string;
-    password?: string;
-    readyTimeout?: number;          // def: 3000
-    disconnectWhenError?: boolean;  // def: true
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
+  readyTimeout?: number;          // def: 3000
+  disconnectWhenError?: boolean;  // def: true
 }
 
-export type OSFtpConnectResponse = SResponse<
-    SResponseOK,     
-    OSFtpConnectError // as SResponseKO
->;
+export type OSFtpConnectResponse =
+  | SResponseOKBasic 
+  | SResponseKOObjectAgain<OSFtpConnectError>;
 
-interface SResponseOK { 
+interface SResponseOKBasic { 
     status: true;
 }
 
-interface SResponseKO { 
+interface SResponseKOObjectAgain { 
     status: false;
     error: {
         msg: string;
@@ -174,17 +175,16 @@ console.log( connected );
 ```ts
 await sftpClient.disconnect() => Promise<OSFtpDisconnectResponse>;
 
-export type OSFtpDisconnectResponse = SResponse<
-    SResponseOK,
-    SResponseKO
->;
+export type OSFtpDisconnectResponse =
+  | SResponseOKBasic
+  | SResponseKOBasic;
 
-interface SResponseOK { 
-    status: true;
+interface SResponseOKBasic { 
+  status: true;
 }
 
-interface SResponseKO { 
-    status: false;
+interface SResponseKOBasic { 
+  status: false;
 }
 ```
 
@@ -211,39 +211,38 @@ console.log( disconnected );
 ### await .upload()
 ```ts
 await sftpClient.upload( filepathFrom: string, filepathTo?: string ) 
-    => Promise<OSFtpFileResponse>;
+  => Promise<OSFtpFileResponse>;
 
-export type OSFtpFileResponse = SResponse<
-    OSFtpFileObject, // as SResponseOK
-    OSFtpFileError   // as SResponseKO
->;
+export type OSFtpFileResponse =
+  | SResponseOKObject<OSFtpFileObject>
+  | SResponseKOObject<OSFtpFileError>;
 
-interface SResponseOK { 
-    status: true;
-    filename: string;
-    filepath: string;
+interface SResponseOKObject { 
+  status: true;
+  filename: string;
+  filepath: string;
 }
 
-interface SResponseKO { 
-    status: false;
-    error: {
-        msg: string;
-        filepathFrom: string;
-        filepathTo?: string;
-        code?: OSFtpErrorCode;
-    }
-}
-
-interface OSFtpFileObject {
-    filename: string;
-    filepath: string;
-}
-
-interface OSFtpFileError {
+interface SResponseKOObject { 
+  status: false;
+  error: {
     msg: string;
     filepathFrom: string;
     filepathTo?: string;
     code?: OSFtpErrorCode;
+  }
+}
+
+interface OSFtpFileObject {
+  filename: string;
+  filepath: string;
+}
+
+interface OSFtpFileError {
+  msg: string;
+  filepathFrom: string;
+  filepathTo?: string;
+  code?: OSFtpErrorCode;
 }
 ```
 
@@ -267,54 +266,53 @@ sftpClient.disconnect();
 ### await .uploadOne()
 ```ts
 await sftpClient.upload( filepathFrom: string, filepathTo?: string ) 
-    => Promise<OSFtpUploadOneResponse>;
+  => Promise<OSFtpUploadOneResponse>;
 
-export type OSFtpUploadOneResponse = SResponse<
-    OSFtpFileObject,                  // as SResponseOK
-    OSFtpFileError | OSFtpConnectError // as SResponseKO
->;
+export type OSFtpUploadOneResponse =
+  | SResponseOKObject<OSFtpFileObject>
+  | SResponseKOObject<OSFtpFileError | OSFtpConnectError>;
 
-interface SResponseOK { 
-    status: true;
-    filename: string;
-    filepath: string;
+interface SResponseOKObject { 
+  status: true;
+  filename: string;
+  filepath: string;
 }
 
-type SResponseKO =
-    | { 
-        status: false;
-        error: {
-          msg: string;
-          filepathFrom: string;
-          filepathTo?: string;
-          code?: OSFtpErrorCode;
-        }
+type SResponseKOObject =
+  | { 
+      status: false;
+      error: {
+        msg: string;
+        filepathFrom: string;
+        filepathTo?: string;
+        code?: OSFtpErrorCode;
       }
-    | {
-        status: false;
-        error: {
-          msg: string;
-          code: OSFtpErrorCode;
-          config: OSFtpConfig;
-        }
+    }
+  | {
+      status: false;
+      error: {
+        msg: string;
+        code: OSFtpErrorCode;
+        config: OSFtpConfig;
       }
+    }
 
 interface OSFtpFileObject {
-    filename: string;
-    filepath: string;
+  filename: string;
+  filepath: string;
 }
 
 interface OSFtpFileError {
-    msg: string;
-    filepathFrom: string;
-    filepathTo?: string;
-    code?: OSFtpErrorCode;
+  msg: string;
+  filepathFrom: string;
+  filepathTo?: string;
+  code?: OSFtpErrorCode;
 }
 
 interface OSFtpConnectError {
-    msg: string;
-    code: OSFtpErrorCode;
-    config: OSFtpConfig;
+  msg: string;
+  code: OSFtpErrorCode;
+  config: OSFtpConfig;
 }
 ```
 
@@ -334,39 +332,38 @@ console.log( uploaded );
 ### await .download()
 ```ts
 await sftpClient.download( filepathFrom: string, filepathTo?: string ) 
-    => Promise<OSFtpFileResponse>;
+  => Promise<OSFtpFileResponse>;
 
-export type OSFtpFileResponse = SResponse<
-    OSFtpFileObject, // as SResponseOK
-    OSFtpFileError   // as SResponseKO
->;
+export type OSFtpFileResponse =
+  | SResponseOKObject<OSFtpFileObject>
+  | SResponseKOObject<OSFtpFileError>;
 
-interface SResponseOK { 
-    status: true;
-    filename: string;
-    filepath: string;
+interface SResponseOKObject { 
+  status: true;
+  filename: string;
+  filepath: string;
 }
 
-interface SResponseKO { 
-    status: false;
-    error: {
-        msg: string;
-        filepathFrom: string;
-        filepathTo?: string;
-        code?: OSFtpErrorCode;
-    }
-}
-
-interface OSFtpFileObject {
-    filename: string;
-    filepath: string;
-}
-
-interface OSFtpFileError {
+interface SResponseKOObject { 
+  status: false;
+  error: {
     msg: string;
     filepathFrom: string;
     filepathTo?: string;
     code?: OSFtpErrorCode;
+  }
+}
+
+interface OSFtpFileObject {
+  filename: string;
+  filepath: string;
+}
+
+interface OSFtpFileError {
+  msg: string;
+  filepathFrom: string;
+  filepathTo?: string;
+  code?: OSFtpErrorCode;
 }
 ```
 
@@ -390,64 +387,65 @@ sftpClient.disconnect();
 ### await .list()
 ```ts
 await sftpClient.list( folder?: string, filters?: OSFtpListFilters ) 
-    => Promise<OSFtpListResponse>;
+  => Promise<OSFtpListResponse>;
 
 interface OSFtpListFilters {
-    onlyFiles?: boolean | undefined;        // def: false
-    onlyFolders?: boolean | undefined;      // def: false
-    pattern?: string | RegExp | undefined;
+  onlyFiles?: boolean | undefined;        // def: false
+  onlyFolders?: boolean | undefined;      // def: false
+  pattern?: ListFilterFunction | undefined;
 }
 
-export type OSFtpListResponse = SResponse<
-    OSFtpListObject, // as SResponseOK
-    OSFtpListError   // as SResponseKO
->;
+type ListFilterFunction = (fileInfo: FileInfo) => boolean;
 
-interface SResponseOK { 
-    status: true;
-    count: number; // list.length
-    list: OSFtpListFile[];
+export type OSFtpListResponse =
+  | SResponseOKObject<OSFtpListObject>
+  | SResponseKOObject<OSFtpListError>;
+
+interface SResponseOKObject { 
+  status: true;
+  count: number; // list.length
+  list: OSFtpListFile[];
 }
 
-interface SResponseKO { 
-    status: false;
-    error: {
-        msg: string;
-        folder: string;
-        filters: OSFtpListFilters;
-        code?: OSFtpErrorCode;
-    }
+interface SResponseKOObject { 
+  status: false;
+  error: {
+    msg: string;
+    folder: string;
+    filters: OSFtpListFilters;
+    code?: OSFtpErrorCode;
+  }
 }
 
 export interface OSFtpListFile {
-    path: string;
-    name: string;
-    type: OSFtpListFileType;
-    date: Date;
-    size: number;
-    owner: string;
+  path: string;
+  name: string;
+  type: OSFtpListFileType;
+  date: Date;
+  size: number;
+  owner: string;
+  group: string;
+  target: string | undefined;
+  rights: {
+    user: string;
     group: string;
-    target: string | undefined;
-    rights: {
-        user: string;
-        group: string;
-        other: string;
-    }
+    other: string;
+  }
 }
 
 type OSFtpListFileType = '-' | 'd' | 'l'; 
 // 'file' | 'folder' | 'symlink'
 
 export interface OSFtpListObject {
-    count: number; // list.length
-    list: OSFtpListFile[];
+  count: number; // list.length
+  list: OSFtpListFile[];
 }
 
 export interface OSFtpListError {
-    msg: string;
-    folder: string;
-    filters: OSFtpListFilters;
-    code?: OSFtpErrorCode;
+  msg: string;
+  folder: string;
+  filters: OSFtpListFilters;
+  code?: OSFtpErrorCode;
 }
 ```
 
@@ -479,63 +477,62 @@ foo* => foo, foobar, foobaz
 response example
 ```js
 {
-    status: true,
-    count: // list.length
-    list: [
-        {
-            type: // file type(-, d, l)
-            name: // file name
-            longname: // file name as linux promp
-            path: // file path
-            date: // file date of modified time
-            modifyDate: // file date of modified time
-            accessDate: // file date of access time
-            size: // file size
-            rights: { user: 'rwx', group: 'rwx', other: 'rwx' }
-            owner: // user number ID
-            group: // group number ID
-        },
-        ...
-    ]
+  status: true,
+  count: // list.length
+  list: [
+    {
+      type: // file type(-, d, l)
+      name: // file name
+      longname: // file name as linux promp
+      path: // file path
+      date: // file date of modified time
+      modifyDate: // file date of modified time
+      accessDate: // file date of access time
+      size: // file size
+      rights: { user: 'rwx', group: 'rwx', other: 'rwx' }
+      owner: // user number ID
+      group: // group number ID
+    },
+    ...
+  ]
 }
 ```
 
 ### await .move()
 ```ts
 await sftpClient.move( filepathFrom: string, filepathTo?: string ) 
-    => Promise<OSFtpFileResponse>;
+  => Promise<OSFtpFileResponse>;
 
-export type OSFtpFileResponse = SResponse<
-    OSFtpFileObject, // as SResponseOK
-    OSFtpFileError   // as SResponseKO
->;
+export type OSFtpFileResponse =
+  | SResponseOKObject<OSFtpFileObject>
+  | SResponseKOObject<OSFtpFileError>;
 
-interface SResponseOK { 
-    status: true;
-    filename: string;
-    filepath: string;
+interface SResponseOKObject { 
+  status: true;
+  filename: string;
+  filepath: string;
 }
 
-interface SResponseKO { 
-    status: false;
-    error: {
-        msg: string;
-        filepathFrom: string;
-        filepathTo?: string;
-        code?: OSFtpErrorCode;
-    }
-}
-
-interface OSFtpFileObject {
-    filename: string;
-    filepath: string;
-}
-
-interface OSFtpFileError {
+interface SResponseKOObject { 
+  status: false;
+  error: {
     msg: string;
     filepathFrom: string;
     filepathTo?: string;
     code?: OSFtpErrorCode;
+  }
+}
+
+interface OSFtpFileObject {
+  filename: string;
+  filepath: string;
+}
+
+interface OSFtpFileError {
+  msg: string;
+  filepathFrom: string;
+  filepathTo?: string;
+  code?: OSFtpErrorCode;
 }
 ```
 
@@ -557,37 +554,36 @@ sftpClient.disconnect();
 ### await .delete()
 ```ts
 await sftpClient.delete( filepathFrom: string, strict?: boolean ) 
-    => Promise<OSFtpFileResponse>;
+  => Promise<OSFtpFileResponse>;
 
-export type OSFtpFileResponse = SResponse<
-    OSFtpFileObject, // as SResponseOK
-    OSFtpFileError   // as SResponseKO
->;
+export type OSFtpFileResponse =
+  | SResponseOKObject<OSFtpFileObject>
+  | SResponseKOObject<OSFtpFileError>;
 
-interface SResponseOK { 
-    status: true;
-    filename: string;
-    filepath: string;
+interface SResponseOKObject { 
+  status: true;
+  filename: string;
+  filepath: string;
 }
 
-interface SResponseKO { 
-    status: false;
-    error: {
-        msg: string;
-        filepathFrom: string;
-        code?: OSFtpErrorCode;
-    }
-}
-
-interface OSFtpFileObject {
-    filename: string;
-    filepath: string;
-}
-
-interface OSFtpFileError {
+interface SResponseKOObject { 
+  status: false;
+  error: {
     msg: string;
     filepathFrom: string;
     code?: OSFtpErrorCode;
+  }
+}
+
+interface OSFtpFileObject {
+  filename: string;
+  filepath: string;
+}
+
+interface OSFtpFileError {
+  msg: string;
+  filepathFrom: string;
+  code?: OSFtpErrorCode;
 }
 ```
 
@@ -611,41 +607,40 @@ sftpClient.disconnect();
 ### await .exists()
 ```ts
 await sftpClient.exists( filepathFrom: string, disconnectWhenError?: boolean ) 
-    => Promise<OSFtpExistResponse>;
+  => Promise<OSFtpExistResponse>;
 
-export type OSFtpExistResponse = SResponse<
-    OSFtpExistObject, // as SResponseOK
-    OSFtpExistError   // as SResponseKO
->;
+export type OSFtpExistResponse =
+  | SResponseOKObject<OSFtpExistObject>
+  | SResponseKOObject<OSFtpExistError>;
 
-interface SResponseOK { 
-    status: true;
-    filename: string;
-    filepath: string;
-    type: string;
+interface SResponseOKObject { 
+  status: true;
+  filename: string;
+  filepath: string;
+  type: string;
 }
 
-interface SResponseKO { 
-    status: false;
-    error: {
-        msg: string;
-        filename: string;
-        filepath: string;
-        code?: OSFtpErrorCode;
-    }
-}
-
-interface OSFtpExistObject {
-    filename: string;
-    filepath: string;
-    type: string;
-}
-
-interface OSFtpExistError {
+interface SResponseKOObject { 
+  status: false;
+  error: {
     msg: string;
     filename: string;
     filepath: string;
     code?: OSFtpErrorCode;
+  }
+}
+
+interface OSFtpExistObject {
+  filename: string;
+  filepath: string;
+  type: string;
+}
+
+interface OSFtpExistError {
+  msg: string;
+  filename: string;
+  filepath: string;
+  code?: OSFtpErrorCode;
 }
 ```
 
@@ -667,37 +662,36 @@ sftpClient.disconnect();
 ### await .mkdir()
 ```ts
 await sftpClient.mkdir( folder, recursive?: boolean, strict?: boolean ) 
-    => Promise<OSFtpFolderResponse>;
+  => Promise<OSFtpFolderResponse>;
 
-export type OSFtpFolderResponse = SResponse<
-    OSFtpFolderObject, // as SResponseOK
-    OSFtpFolderError   // as SResponseKO
->;
+export type OSFtpFolderResponse =
+  | SResponseOKObject<OSFtpFolderObject>
+  | SResponseKOObject<OSFtpFolderError>;
 
-interface SResponseOK { 
-    status: true;
-    foldername: string;
-    folderpath: string;
+interface SResponseOKObject { 
+  status: true;
+  foldername: string;
+  folderpath: string;
 }
 
-interface SResponseKO { 
-    status: false;
-    error: {
-        msg: string;
-        filepathFrom: string;
-        code?: OSFtpErrorCode;
-    }
+interface SResponseKOObject { 
+  status: false;
+  error: {
+    msg: string;
+    filepathFrom: string;
+    code?: OSFtpErrorCode;
+  }
 }
 
 interface OSFtpFolderObject {
-    foldername: string;
-    folderpath: string;
+  foldername: string;
+  folderpath: string;
 }
 
 interface OSFtpFolderError {
-    msg: string;
-    folder: string;
-    code?: OSFtpErrorCode;
+  msg: string;
+  folder: string;
+  code?: OSFtpErrorCode;
 }
 ```
 
@@ -723,37 +717,36 @@ sftpClient.disconnect();
 ### await .rmdir()
 ```ts
 await sftpClient.rmdir( folder, recursive?: boolean, strict?: boolean ) 
-    => Promise<OSFtpFolderResponse>;
+  => Promise<OSFtpFolderResponse>;
 
-export type OSFtpFolderResponse = SResponse<
-    OSFtpFolderObject, // as SResponseOK
-    OSFtpFolderError   // as SResponseKO
->;
+export type OSFtpFolderResponse =
+  | SResponseOKObject<OSFtpFolderObject>
+  | SResponseKOObject<OSFtpFolderError>;
 
-interface SResponseOK { 
-    status: true;
-    foldername: string;
-    folderpath: string;
+interface SResponseOKObject { 
+  status: true;
+  foldername: string;
+  folderpath: string;
 }
 
-interface SResponseKO { 
-    status: false;
-    error: {
-        msg: string;
-        filepathFrom: string;
-        code?: OSFtpErrorCode;
-    }
+interface SResponseKOObject { 
+  status: false;
+  error: {
+    msg: string;
+    filepathFrom: string;
+    code?: OSFtpErrorCode;
+  }
 }
 
 interface OSFtpFolderObject {
-    foldername: string;
-    folderpath: string;
+  foldername: string;
+  folderpath: string;
 }
 
 interface OSFtpFolderError {
-    msg: string;
-    folder: string;
-    code?: OSFtpErrorCode;
+  msg: string;
+  folder: string;
+  code?: OSFtpErrorCode;
 }
 ```
 
