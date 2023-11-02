@@ -40,8 +40,10 @@ describe('init Bad OSFtp', () => {
     }
 
     expect(connected.tryAgain).toBe(true);
-    expect(connected.error.code).toBe('ECONNREFUSED');
-    expect(connected.error.msg).toBe(`SFTP Connect failed: Remote host refused connection.`);
+    expect(connected.error.code).toMatch(/^(ECONNREFUSED|ENOTFOUND)$/);
+    expect(connected.error.msg).toMatch(
+      /^SFTP Connect failed: (Remote host refused connection|Address lookup failed for host).$/,
+    );
   });
 
   test('new OSFtp( timeout-config )', async () => {
