@@ -1,6 +1,5 @@
-import OSFtp from '../dist';
-// @ts-ignore
-import { DIRNAME, FTPCONFIG_DEFAULT } from './utils';
+import OSFtp from '../OSftp';
+import { DIRNAME, FTPCONFIG_DEFAULT } from './_consts.mocks';
 
 //
 
@@ -25,6 +24,20 @@ afterAll(async () => {
 //
 
 describe('move OSFtp', () => {
+  test('move without conection-config', async () => {
+    const ftpClient = new OSFtp();
+
+    const response = await ftpClient.move('', '');
+
+    expect(response.status).toBe(false);
+    if (response.status) {
+      return;
+    }
+
+    expect(response.error.code).toBe('UNCONNECTED');
+    expect(response.error.msg).toBe('SFTP Move failed: config is empty.');
+  });
+
   test('move and no connected', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
@@ -36,19 +49,14 @@ describe('move OSFtp', () => {
     }
 
     expect(response.error.code).toBe('UNCONNECTED');
-    expect(response.error.msg).toBe(
-      'SFTP Move failed: FtpConnectionError: connection status is not yet connected.',
-    );
+    expect(response.error.msg).toBe('SFTP Move failed: FtpConnectionError: connection status is not yet connected.');
   });
 
   test('move bad file-from', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const response = await ftpClient.move(
-      `${FTP_FOLDER}/pthon2.pdf`,
-      `${FTP_FOLDER}/silence2-copy.pdf`,
-    );
+    const response = await ftpClient.move(`${FTP_FOLDER}/pthon2.pdf`, `${FTP_FOLDER}/silence2-copy.pdf`);
 
     expect(response.status).toBe(false);
     if (response.status) {
@@ -65,10 +73,7 @@ describe('move OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const response = await ftpClient.move(
-      `${FTP_FOLDER}/silence2.pdf`,
-      `${FTP_FOLDER}/chacho/silence2-copy.pdf`,
-    );
+    const response = await ftpClient.move(`${FTP_FOLDER}/silence2.pdf`, `${FTP_FOLDER}/chacho/silence2-copy.pdf`);
 
     expect(response.status).toBe(false);
     if (response.status) {
@@ -85,10 +90,7 @@ describe('move OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const responseMove = await ftpClient.move(
-      `${FTP_FOLDER}/silence2.pdf`,
-      `${FTP_FOLDER}/silence2-copy.pdf`,
-    );
+    const responseMove = await ftpClient.move(`${FTP_FOLDER}/silence2.pdf`, `${FTP_FOLDER}/silence2-copy.pdf`);
     const responseList = await ftpClient.list(`${FTP_FOLDER}/`);
     await ftpClient.disconnect();
 
@@ -120,10 +122,7 @@ describe('move OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const responseMove = await ftpClient.move(
-      `${FTP_FOLDER}/silence2-copy.pdf`,
-      `${FTP_FOLDER}/test/silence2-cc.pdf`,
-    );
+    const responseMove = await ftpClient.move(`${FTP_FOLDER}/silence2-copy.pdf`, `${FTP_FOLDER}/test/silence2-cc.pdf`);
     const responseList = await ftpClient.list(`${FTP_FOLDER}/`);
     const responseListFolder = await ftpClient.list(`${FTP_FOLDER}/test`);
     await ftpClient.disconnect();

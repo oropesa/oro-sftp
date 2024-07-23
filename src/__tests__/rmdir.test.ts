@@ -1,6 +1,5 @@
-import OSFtp from '../dist';
-// @ts-ignore
-import { DIRNAME, FTPCONFIG_DEFAULT } from './utils';
+import OSFtp from '../OSftp';
+import { DIRNAME, FTPCONFIG_DEFAULT } from './_consts.mocks';
 
 //
 
@@ -27,6 +26,20 @@ afterAll(async () => {
 //
 
 describe('rmdir OSFtp', () => {
+  test('rmdir without conection-config', async () => {
+    const ftpClient = new OSFtp();
+
+    const response = await ftpClient.rmdir(`${FTP_FOLDER}/chacho`);
+
+    expect(response.status).toBe(false);
+    if (response.status) {
+      return;
+    }
+
+    expect(response.error.code).toBe('UNCONNECTED');
+    expect(response.error.msg).toBe('SFTP Rmdir failed: config is empty.');
+  });
+
   test('rmdir and no connected', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
@@ -38,9 +51,7 @@ describe('rmdir OSFtp', () => {
     }
 
     expect(response.error.code).toBe('UNCONNECTED');
-    expect(response.error.msg).toBe(
-      'SFTP Rmdir failed: FtpConnectionError: connection status is not yet connected.',
-    );
+    expect(response.error.msg).toBe('SFTP Rmdir failed: FtpConnectionError: connection status is not yet connected.');
   });
 
   test('rmdir folder null', async () => {
@@ -87,9 +98,7 @@ describe('rmdir OSFtp', () => {
     }
 
     expect(response.error.code).toBe('ENOTFOUND');
-    expect(response.error.msg).toBe(
-      `SFTP Rmdir failed: Bad Path: ${FTP_FOLDER}/loco: No such directory.`,
-    );
+    expect(response.error.msg).toBe(`SFTP Rmdir failed: Bad Path: ${FTP_FOLDER}/loco: No such directory.`);
   });
 
   test('rmdir folder with content', async () => {

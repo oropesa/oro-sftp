@@ -1,10 +1,12 @@
-const { OSFtp } = require('../dist');
-const { Ofn } = require('oro-functions');
-const { FTPCONFIG_BAD, FTPCONFIG_DEFAULT } = require('./utils');
+import Ofn from 'oro-functions';
+
+import OSFtp from '../OSftp';
+import type { OSFtpConfig } from '../OSftp.types';
+import { FTPCONFIG_BAD, FTPCONFIG_DEFAULT } from './_consts.mocks';
 
 //
 
-describe('get OSFtp parent clientFTP', () => {
+describe('getClient OSFtp', () => {
   test('client is SftpClient', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
@@ -13,14 +15,14 @@ describe('get OSFtp parent clientFTP', () => {
   });
 });
 
-describe('init Bad OSFtp', () => {
+describe('init OSFtp (wrong)', () => {
   test('new OSFtp( undefined )', async () => {
     const ftpClient = new OSFtp();
 
     const connected = await ftpClient.connect();
 
     expect(connected.status).toBe(false);
-    if (connected.status === true) {
+    if (connected.status) {
       return;
     }
 
@@ -35,7 +37,7 @@ describe('init Bad OSFtp', () => {
     const connected = await ftpClient.connect();
 
     expect(connected.status).toBe(false);
-    if (connected.status === true) {
+    if (connected.status) {
       return;
     }
 
@@ -47,25 +49,23 @@ describe('init Bad OSFtp', () => {
   });
 
   test('new OSFtp( timeout-config )', async () => {
-    const customConfig = Object.assign({ readyTimeout: 1 }, FTPCONFIG_DEFAULT);
+    const customConfig = { readyTimeout: 1, ...FTPCONFIG_DEFAULT };
     const ftpClient = new OSFtp(customConfig);
 
     const connected = await ftpClient.connect();
 
     expect(connected.status).toBe(false);
-    if (connected.status === true) {
+    if (connected.status) {
       return;
     }
 
     expect(connected.tryAgain).toBe(true);
     expect(connected.error.code).toBe('ENTIMEOUT');
-    expect(connected.error.msg).toBe(
-      `SFTP Connect failed: getConnection: Timed out while waiting for handshake.`,
-    );
+    expect(connected.error.msg).toBe(`SFTP Connect failed: getConnection: Timed out while waiting for handshake.`);
   });
 });
 
-describe('init OSFtp', () => {
+describe('init OSFtp (good)', () => {
   test('new OSFtp( config )', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
@@ -75,9 +75,16 @@ describe('init OSFtp', () => {
     expect(connected.status).toBe(true);
     expect(disconnected.status).toBe(true);
   });
-});
+  test('new OSFtp() and config in connect', async () => {
+    const ftpClient = new OSFtp();
 
-describe('init OSFtp and disconnect when error', () => {
+    const connected = await ftpClient.connect(FTPCONFIG_DEFAULT);
+    const disconnected = await ftpClient.disconnect();
+
+    expect(connected.status).toBe(true);
+    expect(disconnected.status).toBe(true);
+  });
+
   test('init and auto-disconnect', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
@@ -90,7 +97,7 @@ describe('init OSFtp and disconnect when error', () => {
   });
 
   test('init and avoid auto-disconnect', async () => {
-    const config = Ofn.cloneObject(FTPCONFIG_DEFAULT);
+    const config: OSFtpConfig = Ofn.cloneObject(FTPCONFIG_DEFAULT);
     config.disconnectWhenError = false;
 
     const ftpClient = new OSFtp(config);

@@ -1,11 +1,12 @@
-const { OSFtp } = require('../dist');
-const fsExtra = require('fs-extra');
-const { Ofn } = require('oro-functions');
-const { FTPCONFIG_DEFAULT } = require('./utils');
+import fsExtra from 'fs-extra';
+import Ofn from 'oro-functions';
+
+import OSFtp from '../OSftp';
+import { DIRNAME, FTPCONFIG_DEFAULT } from './_consts.mocks';
 
 //
 
-const FTP_FOLDER = 'test-upload';
+const FTP_FOLDER = 'test-upload-ts';
 
 beforeAll(async () => {
   const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
@@ -26,36 +27,42 @@ afterAll(async () => {
 //
 
 describe('upload OSFtp', () => {
-  test('upload and no connected', async () => {
-    const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
+  test('upload without conection-config', async () => {
+    const ftpClient = new OSFtp();
 
-    const response = await ftpClient.upload(
-      `${__dirname}/zsilence.pdf`,
-      `${FTP_FOLDER}/silence.pdf`,
-    );
+    const response = await ftpClient.upload(`${DIRNAME}/zsilence.pdf`, `${FTP_FOLDER}/silence.pdf`);
 
     expect(response.status).toBe(false);
-    if (response.status === true) {
+    if (response.status) {
       return;
     }
 
     expect(response.error.code).toBe('UNCONNECTED');
-    expect(response.error.msg).toBe(
-      'SFTP Upload failed: FtpConnectionError: connection status is not yet connected.',
-    );
+    expect(response.error.msg).toBe('SFTP Upload failed: config is empty.');
+  });
+
+  test('upload and no connected', async () => {
+    const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
+
+    const response = await ftpClient.upload(`${DIRNAME}/zsilence.pdf`, `${FTP_FOLDER}/silence.pdf`);
+
+    expect(response.status).toBe(false);
+    if (response.status) {
+      return;
+    }
+
+    expect(response.error.code).toBe('UNCONNECTED');
+    expect(response.error.msg).toBe('SFTP Upload failed: FtpConnectionError: connection status is not yet connected.');
   });
 
   test('upload bad file-from name', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const response = await ftpClient.upload(
-      `${__dirname}/zpthon.pdf`,
-      `${FTP_FOLDER}/silence-copy.pdf`,
-    );
+    const response = await ftpClient.upload(`${DIRNAME}/zpthon.pdf`, `${FTP_FOLDER}/silence-copy.pdf`);
 
     expect(response.status).toBe(false);
-    if (response.status === true) {
+    if (response.status) {
       return;
     }
 
@@ -67,32 +74,27 @@ describe('upload OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const response = await ftpClient.upload(
-      `${__dirname}/zsilence.pdf`,
-      `${FTP_FOLDER}/chacho/silence-copy.pdf`,
-    );
+    const response = await ftpClient.upload(`${DIRNAME}/zsilence.pdf`, `${FTP_FOLDER}/chacho/silence-copy.pdf`);
 
     expect(response.status).toBe(false);
-    if (response.status === true) {
+    if (response.status) {
       return;
     }
 
     expect(response.error.code).toBe('ENOTFOUND');
-    expect(response.error.msg).toBe(
-      `SFTP Upload failed: No such file ${FTP_FOLDER}/chacho/silence-copy.pdf.`,
-    );
+    expect(response.error.msg).toBe(`SFTP Upload failed: No such file ${FTP_FOLDER}/chacho/silence-copy.pdf.`);
   });
 
   test('upload simple one param', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const responseUpload = await ftpClient.upload(`${__dirname}/zsilence.pdf`);
+    const responseUpload = await ftpClient.upload(`${DIRNAME}/zsilence.pdf`);
     const responseList = await ftpClient.list();
     await ftpClient.disconnect();
 
     expect(responseUpload.status).toBe(true);
-    if (responseUpload.status === false) {
+    if (!responseUpload.status) {
       return;
     }
 
@@ -100,7 +102,7 @@ describe('upload OSFtp', () => {
     expect(responseUpload.filepath).toBe('zsilence.pdf');
 
     expect(responseList.status).toBe(true);
-    if (responseList.status === false) {
+    if (!responseList.status) {
       return;
     }
 
@@ -112,15 +114,12 @@ describe('upload OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const responseUpload = await ftpClient.upload(
-      `${__dirname}/zsilence.pdf`,
-      `${FTP_FOLDER}/silence-copy.pdf`,
-    );
+    const responseUpload = await ftpClient.upload(`${DIRNAME}/zsilence.pdf`, `${FTP_FOLDER}/silence-copy.pdf`);
     const responseList = await ftpClient.list(`${FTP_FOLDER}/`);
     await ftpClient.disconnect();
 
     expect(responseUpload.status).toBe(true);
-    if (responseUpload.status === false) {
+    if (!responseUpload.status) {
       return;
     }
 
@@ -128,7 +127,7 @@ describe('upload OSFtp', () => {
     expect(responseUpload.filepath).toBe(`${FTP_FOLDER}/silence-copy.pdf`);
 
     expect(responseList.status).toBe(true);
-    if (responseList.status === false) {
+    if (!responseList.status) {
       return;
     }
 
@@ -140,15 +139,12 @@ describe('upload OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const responseUpload = await ftpClient.upload(
-      `${__dirname}/zsilence.pdf`,
-      `${FTP_FOLDER}/test/silence-cc.pdf`,
-    );
+    const responseUpload = await ftpClient.upload(`${DIRNAME}/zsilence.pdf`, `${FTP_FOLDER}/test/silence-cc.pdf`);
     const responseList = await ftpClient.list(`${FTP_FOLDER}/test`);
     await ftpClient.disconnect();
 
     expect(responseUpload.status).toBe(true);
-    if (responseUpload.status === false) {
+    if (!responseUpload.status) {
       return;
     }
 
@@ -156,7 +152,7 @@ describe('upload OSFtp', () => {
     expect(responseUpload.filepath).toBe(`${FTP_FOLDER}/test/silence-cc.pdf`);
 
     expect(responseList.status).toBe(true);
-    if (responseList.status === false) {
+    if (!responseList.status) {
       return;
     }
 
@@ -168,7 +164,7 @@ describe('upload OSFtp', () => {
   test('upload relative', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
-    await fsExtra.copy(`${__dirname}/zsilence2.pdf`, `../silence2.pdf`);
+    await fsExtra.copy(`${DIRNAME}/zsilence2.pdf`, `../silence2.pdf`);
 
     await ftpClient.connect();
     const responseUpload = await ftpClient.upload(`../silence2.pdf`, `${FTP_FOLDER}/silence2.pdf`);
@@ -178,7 +174,7 @@ describe('upload OSFtp', () => {
     await fsExtra.remove(`../silence2.pdf`);
 
     expect(responseUpload.status).toBe(true);
-    if (responseUpload.status === false) {
+    if (!responseUpload.status) {
       return;
     }
 
@@ -186,7 +182,7 @@ describe('upload OSFtp', () => {
     expect(responseUpload.filepath).toBe(`${FTP_FOLDER}/silence2.pdf`);
 
     expect(responseList.status).toBe(true);
-    if (responseList.status === false) {
+    if (!responseList.status) {
       return;
     }
 
@@ -197,19 +193,40 @@ describe('upload OSFtp', () => {
   test('upload one', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
-    const response = await ftpClient.uploadOne(
-      `${__dirname}/zsilence.pdf`,
-      `${FTP_FOLDER}/silence-one.pdf`,
-    );
+    const response = await ftpClient.uploadOne(`${DIRNAME}/zsilence.pdf`, `${FTP_FOLDER}/silence-one.pdf`);
 
     expect(response.status).toBe(true);
-    if (response.status === false) {
+    if (!response.status) {
       return;
     }
 
     expect(response.filename).toBe('silence-one.pdf');
     expect(response.filepath).toBe(`${FTP_FOLDER}/silence-one.pdf`);
   });
-});
 
-//endregion
+  test('upload one (conect fails)', async () => {
+    const ftpClient = new OSFtp();
+
+    const response = await ftpClient.uploadOne(`${DIRNAME}/zsilence.pdf`, `${FTP_FOLDER}/silence-one.pdf`);
+
+    expect(response.status).toBe(false);
+    if (response.status) {
+      return;
+    }
+
+    expect(response.error.code).toBe('UNCONNECTED');
+  });
+
+  test('upload one (upload fails)', async () => {
+    const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
+
+    const response = await ftpClient.uploadOne('', `${FTP_FOLDER}/silence-copy.pdf`);
+
+    expect(response.status).toBe(false);
+    if (response.status) {
+      return;
+    }
+
+    expect(response.error.code).toBe('EISDIR');
+  });
+});

@@ -1,6 +1,5 @@
-import OSFtp from '../dist';
-// @ts-ignore
-import { FTPCONFIG_DEFAULT } from './utils';
+import OSFtp from '../OSftp';
+import { FTPCONFIG_DEFAULT } from './_consts.mocks';
 
 //
 
@@ -23,6 +22,20 @@ afterAll(async () => {
 //
 
 describe('mkdir OSFtp', () => {
+  test('mkdir without conection-config', async () => {
+    const ftpClient = new OSFtp();
+
+    const response = await ftpClient.mkdir(FTP_FOLDER);
+
+    expect(response.status).toBe(false);
+    if (response.status) {
+      return;
+    }
+
+    expect(response.error.code).toBe('UNCONNECTED');
+    expect(response.error.msg).toBe('SFTP Mkdir failed: config is empty.');
+  });
+
   test('mkdir and no connected', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
@@ -34,9 +47,7 @@ describe('mkdir OSFtp', () => {
     }
 
     expect(response.error.code).toBe('UNCONNECTED');
-    expect(response.error.msg).toBe(
-      'SFTP Mkdir failed: FtpConnectionError: connection status is not yet connected.',
-    );
+    expect(response.error.msg).toBe('SFTP Mkdir failed: FtpConnectionError: connection status is not yet connected.');
   });
 
   test('mkdir folder null', async () => {

@@ -1,8 +1,8 @@
-import OSFtp from '../dist';
 import fsExtra from 'fs-extra';
 import Ofn from 'oro-functions';
-// @ts-ignore
-import { DIRNAME, FTPCONFIG_DEFAULT } from './utils';
+
+import OSFtp from '../OSftp';
+import { DIRNAME, FTPCONFIG_DEFAULT } from './_consts.mocks';
 
 //
 
@@ -29,13 +29,24 @@ afterAll(async () => {
 //
 
 describe('download OSFtp', () => {
+  test('download without conection-config', async () => {
+    const ftpClient = new OSFtp();
+
+    const response = await ftpClient.download(`${FTP_FOLDER}/silence2.pdf`, `${DIRNAME}/zsilence-copy-ts.pdf`);
+
+    expect(response.status).toBe(false);
+    if (response.status) {
+      return;
+    }
+
+    expect(response.error.code).toBe('UNCONNECTED');
+    expect(response.error.msg).toBe('SFTP Download failed: config is empty.');
+  });
+
   test('download and no connected', async () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
-    const response = await ftpClient.download(
-      `${FTP_FOLDER}/silence2.pdf`,
-      `${DIRNAME}/zsilence-copy-ts.pdf`,
-    );
+    const response = await ftpClient.download(`${FTP_FOLDER}/silence2.pdf`, `${DIRNAME}/zsilence-copy-ts.pdf`);
 
     expect(response.status).toBe(false);
     if (response.status) {
@@ -52,10 +63,7 @@ describe('download OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const response = await ftpClient.download(
-      `${FTP_FOLDER}/pthon2.pdf`,
-      `${DIRNAME}/zsilence-copy-ts.pdf`,
-    );
+    const response = await ftpClient.download(`${FTP_FOLDER}/pthon2.pdf`, `${DIRNAME}/zsilence-copy-ts.pdf`);
 
     expect(response.status).toBe(false);
     if (response.status) {
@@ -70,10 +78,7 @@ describe('download OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const response = await ftpClient.download(
-      `${FTP_FOLDER}/silence2.pdf`,
-      `${DIRNAME}/chacho/zsilence-copy-ts.pdf`,
-    );
+    const response = await ftpClient.download(`${FTP_FOLDER}/silence2.pdf`, `${DIRNAME}/chacho/zsilence-copy-ts.pdf`);
 
     expect(response.status).toBe(false);
     if (response.status) {
@@ -110,10 +115,7 @@ describe('download OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const response = await ftpClient.download(
-      `${FTP_FOLDER}/silence2.pdf`,
-      `${DIRNAME}/zsilence-copy-ts.pdf`,
-    );
+    const response = await ftpClient.download(`${FTP_FOLDER}/silence2.pdf`, `${DIRNAME}/zsilence-copy-ts.pdf`);
     await ftpClient.disconnect();
 
     const existsFile = await fsExtra.exists(`${DIRNAME}/zsilence-copy-ts.pdf`);
@@ -135,10 +137,7 @@ describe('download OSFtp', () => {
     const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
 
     await ftpClient.connect();
-    const response = await ftpClient.download(
-      `${FTP_FOLDER}/silence2.pdf`,
-      `../zsilence2-copy-ts.pdf`,
-    );
+    const response = await ftpClient.download(`${FTP_FOLDER}/silence2.pdf`, `../zsilence2-copy-ts.pdf`);
     await ftpClient.disconnect();
 
     const existsFile = await fsExtra.exists(`../zsilence2-copy-ts.pdf`);
@@ -152,9 +151,7 @@ describe('download OSFtp', () => {
     }
 
     expect(response.filename).toBe('zsilence2-copy-ts.pdf');
-    expect(response.filepath).toBe(
-      Ofn.sanitizePath(`${Ofn.getFolderByPath(process.cwd())}/zsilence2-copy-ts.pdf`),
-    );
+    expect(response.filepath).toBe(Ofn.sanitizePath(`${Ofn.getFolderByPath(process.cwd())}/zsilence2-copy-ts.pdf`));
     expect(existsFile).toBe(true);
   });
 });

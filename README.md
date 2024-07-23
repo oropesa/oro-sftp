@@ -771,37 +771,25 @@ sftpClient.disconnect();
 
 ## Testing
 
-If you want to run `npm run test`, it's required to declare your own `./test/config.json` 
-(you can _copypaste_ it from `./test/config-default.json`)
+If you want to run `npm run test` in local, first you need to run a sftp server (i.e. via docker):
+
+```bash
+# 'atmoz/sftp:alpine' is smaller and faster
+> docker run --name oro-sftp-server -p 2222:22 -d atmoz/sftp:alpine -e osftp_user:osftp_pass:::osftp_folder 
+# change the login-folder to have full privileges in main folder
+> docker exec oro-sftp-server sh -c "sed -i -e 's#ForceCommand internal-sftp#ForceCommand internal-sftp -d /osftp_folder#' /etc/ssh/sshd_config" 
+# restart container
+> docker restart oro-sftp-server
+```
+
+Then, you have to declare your own `./test/config.json`, <br>
+<small>You can _copypaste_ it from `./test/config-default.json`</small>
 
 ```json
 {
-  "host": "IPADDRESS",
-  "port": 22,
-  "user": "user",
-  "password": "password"
+  "host": "localhost",
+  "port": 2222,
+  "user": "osftp_user",
+  "password": "osftp_pass"
 }
 ```
-
-__NOTICE:__ When tests are running, in the _server ftp_ it's created (and removed when it has finished) the next folders:
-* `test-exists`, 
-* `test-mkdir`, 
-* `test-rmdir`,
-* `test-list`, 
-* `test-delete`, 
-* `test-move`, 
-* `test-upload`,
-* `test-download`;
-* `test-exists-ts`,
-* `test-mkdir-ts`,
-* `test-rmdir-ts`,
-* `test-list-ts`,
-* `test-delete-ts`,
-* `test-move-ts`,
-* `test-upload-ts`,
-* `test-download-ts`;
-and the files `./zpython.pdf`, `./zpython2.pdf`.
-
-So, 
-* `rw` permissions should be allowed, 
-* and if in your _sftp server_ already exist them and there are required for you, avoid to `run test`.
