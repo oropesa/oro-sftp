@@ -1,16 +1,16 @@
-const { OSFtp } = require('../dist');
-const { FTPCONFIG_DEFAULT } = require('./utils');
+import OSFtp from '../OSftp';
+import { DIRNAME, FTPCONFIG_DEFAULT } from './_consts.mocks';
 
 //
 
-const FTP_FOLDER = 'test-exists';
+const FTP_FOLDER = 'test-exists-ts';
 
 beforeAll(async () => {
   const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
   await ftpClient.connect();
   await ftpClient.rmdir(FTP_FOLDER, true);
   await ftpClient.mkdir(FTP_FOLDER);
-  await ftpClient.upload(`${__dirname}/zsilence2.pdf`, `${FTP_FOLDER}/silence2.pdf`);
+  await ftpClient.upload(`${DIRNAME}/zsilence2.pdf`, `${FTP_FOLDER}/silence2.pdf`);
   await ftpClient.disconnect();
 });
 
@@ -24,20 +24,32 @@ afterAll(async () => {
 //
 
 describe('exists OSFtp', () => {
-  test('exists and no connected', async () => {
-    const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
+  test('exists without conection-config', async () => {
+    const ftpClient = new OSFtp();
 
-    const response = await ftpClient.exists();
+    const response = await ftpClient.exists('');
 
     expect(response.status).toBe(false);
-    if (response.status === true) {
+    if (response.status) {
       return;
     }
 
     expect(response.error.code).toBe('UNCONNECTED');
-    expect(response.error.msg).toBe(
-      'SFTP Exists failed: FtpConnectionError: connection status is not yet connected.',
-    );
+    expect(response.error.msg).toBe('SFTP Exists failed: config is empty.');
+  });
+
+  test('exists and no connected', async () => {
+    const ftpClient = new OSFtp(FTPCONFIG_DEFAULT);
+
+    const response = await ftpClient.exists('');
+
+    expect(response.status).toBe(false);
+    if (response.status) {
+      return;
+    }
+
+    expect(response.error.code).toBe('UNCONNECTED');
+    expect(response.error.msg).toBe('SFTP Exists failed: FtpConnectionError: connection status is not yet connected.');
   });
 
   test('exists bad file-from', async () => {
@@ -48,7 +60,7 @@ describe('exists OSFtp', () => {
     await ftpClient.disconnect();
 
     expect(response.status).toBe(false);
-    if (response.status === false) {
+    if (!response.status) {
       return;
     }
 
@@ -65,7 +77,7 @@ describe('exists OSFtp', () => {
     await ftpClient.disconnect();
 
     expect(response.status).toBe(true);
-    if (response.status === false) {
+    if (!response.status) {
       return;
     }
 
@@ -74,7 +86,7 @@ describe('exists OSFtp', () => {
     expect(response.type).toBe('-');
 
     expect(responseList.status).toBe(true);
-    if (responseList.status === false) {
+    if (!responseList.status) {
       return;
     }
 

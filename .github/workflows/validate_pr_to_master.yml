@@ -8,17 +8,35 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      sftpserver:
+        image: atmoz/sftp:alpine
+        ports:
+          - 2222:22
+        options: -e SFTP_USERS=osftp_user:osftp_pass:::osftp_folder
+
     steps:
       - name: "Checkout Code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Install Node.js and jq"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      - name: "Prepare Sftp Server docker"
+        env:
+          FOLDER: ${{ secrets.TEST_SFTP_FOLDER }}
+        run: |
+          docker exec $(docker ps -q --filter "ancestor=atmoz/sftp:alpine") sh -c "sed -i -e 's#ForceCommand internal-sftp#ForceCommand internal-sftp -d /${{ env.FOLDER }}#' /etc/ssh/sshd_config"
+
+      - name: "Init Sftp Server docker"
+        run: |
+          docker restart $(docker ps -q --filter "ancestor=atmoz/sftp:alpine")
+          sleep 2
+
       - name: "Install Dependencies"
-        run: npm install
+        run: npm ci
 
       - name: "Run Build"
         run: npm run build
@@ -31,14 +49,9 @@ jobs:
           HOST: ${{ secrets.TEST_SFTP_HOST }}
           PORT: ${{ secrets.TEST_SFTP_PORT }}
           USER: ${{ secrets.TEST_SFTP_USER }}
-          PASSWORD: ${{ secrets.TEST_SFTP_PASSWORD }}
+          PASS: ${{ secrets.TEST_SFTP_PASSWORD }}
         run: |
-          echo '{
-            "host": "'"$HOST"'",
-            "port": "'"$PORT"'",
-            "user": "'"$USER"'",
-            "password": "'"$PASSWORD"'"
-          }' > tests/config.json
+          echo '{ "host": "${{ env.HOST }}", "port": "${{ env.PORT }}", "user": "${{ env.USER }}", "password": "${{ env.PASS }}" }' > src/__tests__/config.json
 
       - name: "Run Tests"
         run: npm run test
@@ -47,12 +60,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout Code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: "Install Node.js and jq"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
