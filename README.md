@@ -13,42 +13,42 @@ npm install oro-sftp
 Example:
 
 ```js
-// cjs
-const { OSftp } = require( 'oro-sftp' );
-
 // mjs, ts
 import OSFtp from 'oro-sftp';
 
-const sftpClient = new OSftp( {
-  host: 'custom-server.com', 
-  port: 22, 
-  user: 'custom-user', 
-  password: 'custom-password' 
-} );
+// cjs
+const { OSftp } = require('oro-sftp');
 
-const sftpUpload = await sftpClient.uploadOne( `./folder-from/filename`, 'folder-to/filename' );
+const sftpClient = new OSftp({
+  host: 'custom-server.com',
+  port: 22,
+  user: 'custom-user',
+  password: 'custom-password',
+});
 
-console.log( sftpUpload );
+const sftpUpload = await sftpClient.uploadOne(`./folder-from/filename`, 'folder-to/filename');
+
+console.log(sftpUpload);
 // -> { status: true, ... }
 ```
 
 ## Methods
 
-* [Error Code List](#error-code-list)
-* [new OSFtp()](#new-osftp)
-* [.getClient()](#getclient)
-* [await .connect()](#await-connect)
-* [await .disconnect()](#await-disconnect)
-* [await .upload()](#await-upload)
-* [await .uploadOne()](#await-uploadone)
-* [await .download()](#await-download)
-* [await .list()](#await-list)
-* [await .move()](#await-move)
-* [await .delete()](#await-delete)
-* [await .exists()](#await-exists)
-* [await .mkdir()](#await-mkdir)
-* [await .rmdir()](#await-rmdir)
-* [Testing](#testing)
+- [Error Code List](#error-code-list)
+- [new OSFtp()](#new-osftp)
+- [.getClient()](#getclient)
+- [await .connect()](#await-connect)
+- [await .disconnect()](#await-disconnect)
+- [await .upload()](#await-upload)
+- [await .uploadOne()](#await-uploadone)
+- [await .download()](#await-download)
+- [await .list()](#await-list)
+- [await .move()](#await-move)
+- [await .delete()](#await-delete)
+- [await .exists()](#await-exists)
+- [await .mkdir()](#await-mkdir)
+- [await .rmdir()](#await-rmdir)
+- [Testing](#testing)
 
 ### Error Code List
 
@@ -56,14 +56,14 @@ When an error happens, instead to throw an error, it's returned a managed _respo
 
 _responseKO_ is an object with 3 fields:
 
-````ts
+```ts
 interface responseKO {
   status: false;
   error: {
-    msg: string;         // explaining the error
+    msg: string; // explaining the error
     code: OSFtpErrorCode; // string
     // ...               // other data, it depends on method error
-  },
+  };
   tryAgain: boolean;
 }
 
@@ -75,9 +75,10 @@ type OSFtpErrorCode =
   | 'ENOENT'
   | 'EEXIST'
   | 'ENOTEMPTY';
-````
+```
 
 ### new OSftp()
+
 ```ts
 new OSFtp( config?: OSFtpConfig );
 
@@ -96,20 +97,21 @@ As parameters, you can pass the server config data (or you can also do it in `.c
 In addition, `config` has param `disconnectWhenError` (default `true`), so when an error happens, connection closes automatically.
 
 ```js
-const OSftp = require( 'oro-sftp' );
+const OSftp = require('oro-sftp');
 const config = {
   host: 'custom-server.com',
   port: 22,
   user: 'custom-user',
   password: 'custom-password',
   readyTimeout: 3000,
-  disconnectWhenError: true
-}
+  disconnectWhenError: true,
+};
 
-const sftpClient = new OSftp( config );
+const sftpClient = new OSftp(config);
 ```
 
 ### .getClient()
+
 ```ts
 sftpClient.getClient(): SftpClient;
 ```
@@ -117,12 +119,13 @@ sftpClient.getClient(): SftpClient;
 If you want to use the library `ssh2-sftp-client`, you can get the object.
 
 ```js
-const sftpClient = new OSftp( config );
+const sftpClient = new OSftp(config);
 
 const ssh2SftpClient = await sftpClient.getClient();
 ```
 
 ### await .connect()
+
 ```ts
 await sftpClient.connect( config?: OSFtpConfig ) => Promise<OSFtpConnectResponse>;
 
@@ -136,14 +139,14 @@ type OSFtpConfig = PromiseFtp.Options &  {
 }
 
 export type OSFtpConnectResponse =
-  | SResponseOKBasic 
+  | SResponseOKBasic
   | SResponseKOObjectAgain<OSFtpConnectError>;
 
-interface SResponseOKBasic { 
+interface SResponseOKBasic {
     status: true;
 }
 
-interface SResponseKOObjectAgain { 
+interface SResponseKOObjectAgain {
     status: false;
     error: {
         msg: string;
@@ -164,14 +167,15 @@ When you create a connection, it's expected that you will disconnect it later.
 This method return a _response_, which is an object with `status: true | false`.
 
 ```js
-const sftpClient = new OSftp( config );
+const sftpClient = new OSftp(config);
 
 const connected = await sftpClient.connect();
-console.log( connected );
+console.log(connected);
 // -> { status: true }
 ```
 
 ### await .disconnect()
+
 ```ts
 await sftpClient.disconnect() => Promise<OSFtpDisconnectResponse>;
 
@@ -179,11 +183,11 @@ export type OSFtpDisconnectResponse =
   | SResponseOKBasic
   | SResponseKOBasic;
 
-interface SResponseOKBasic { 
+interface SResponseOKBasic {
   status: true;
 }
 
-interface SResponseKOBasic { 
+interface SResponseKOBasic {
   status: false;
 }
 ```
@@ -196,34 +200,34 @@ This means that if a method (like `upload` or `move`) return `status: false`, th
 This method return a _response_, which is an object with `status: true | false`.
 
 ```js
-const sftpClient = new OSftp( config );
+const sftpClient = new OSftp(config);
 
 const connected = await sftpClient.connect();
 
 // ...
 
 const disconnected = await sftpClient.disconnect();
-console.log( disconnected );
+console.log(disconnected);
 // -> { status: true }
-
 ```
 
 ### await .upload()
+
 ```ts
-await sftpClient.upload( filepathFrom: string, filepathTo?: string ) 
+await sftpClient.upload( filepathFrom: string, filepathTo?: string )
   => Promise<OSFtpFileResponse>;
 
 export type OSFtpFileResponse =
   | SResponseOKObject<OSFtpFileObject>
   | SResponseKOObject<OSFtpFileError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   filename: string;
   filepath: string;
 }
 
-interface SResponseKOObject { 
+interface SResponseKOObject {
   status: false;
   error: {
     msg: string;
@@ -264,22 +268,23 @@ sftpClient.disconnect();
 ```
 
 ### await .uploadOne()
+
 ```ts
-await sftpClient.upload( filepathFrom: string, filepathTo?: string ) 
+await sftpClient.upload( filepathFrom: string, filepathTo?: string )
   => Promise<OSFtpUploadOneResponse>;
 
 export type OSFtpUploadOneResponse =
   | SResponseOKObject<OSFtpFileObject>
   | SResponseKOObject<OSFtpFileError | OSFtpConnectError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   filename: string;
   filepath: string;
 }
 
 type SResponseKOObject =
-  | { 
+  | {
       status: false;
       error: {
         msg: string;
@@ -317,34 +322,36 @@ interface OSFtpConnectError {
 ```
 
 If you want to upload just one file, you can use this method and inside:
+
 1. it's connected,
 2. file is uploaded,
 3. it's disconnected.
 
 ```js
-const sftpClient = new OSftp( config );
+const sftpClient = new OSftp(config);
 
-const uploaded = await sftpClient.uploadOne( './files/custom-file.pdf' );
-console.log( uploaded );
+const uploaded = await sftpClient.uploadOne('./files/custom-file.pdf');
+console.log(uploaded);
 // -> { status: true, filename: 'custom-file.pdf', ... }
 ```
 
 ### await .download()
+
 ```ts
-await sftpClient.download( filepathFrom: string, filepathTo?: string ) 
+await sftpClient.download( filepathFrom: string, filepathTo?: string )
   => Promise<OSFtpFileResponse>;
 
 export type OSFtpFileResponse =
   | SResponseOKObject<OSFtpFileObject>
   | SResponseKOObject<OSFtpFileError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   filename: string;
   filepath: string;
 }
 
-interface SResponseKOObject { 
+interface SResponseKOObject {
   status: false;
   error: {
     msg: string;
@@ -385,8 +392,9 @@ sftpClient.disconnect();
 ```
 
 ### await .list()
+
 ```ts
-await sftpClient.list( folder?: string, filters?: OSFtpListFilters ) 
+await sftpClient.list( folder?: string, filters?: OSFtpListFilters )
   => Promise<OSFtpListResponse>;
 
 interface OSFtpListFilters {
@@ -401,13 +409,13 @@ export type OSFtpListResponse =
   | SResponseOKObject<OSFtpListObject>
   | SResponseKOObject<OSFtpListError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   count: number; // list.length
   list: OSFtpListFile[];
 }
 
-interface SResponseKOObject { 
+interface SResponseKOObject {
   status: false;
   error: {
     msg: string;
@@ -433,7 +441,7 @@ export interface OSFtpListFile {
   }
 }
 
-type OSFtpListFileType = '-' | 'd' | 'l'; 
+type OSFtpListFileType = '-' | 'd' | 'l';
 // 'file' | 'folder' | 'symlink'
 
 export interface OSFtpListObject {
@@ -464,10 +472,11 @@ console.log( files );
 sftpClient.disconnect();
 ```
 
-* Filter: `pattern`
+- Filter: `pattern`
 
 `pattern` filter can be a regular expression (most powerful option) or
 a simple glob-like string where `*` will match any number of characters, e.g.
+
 ```js
 foo* => foo, foobar, foobaz
 *bar => bar, foobar, tabbar
@@ -475,6 +484,7 @@ foo* => foo, foobar, foobaz
 ```
 
 response example
+
 ```js
 {
   status: true,
@@ -499,21 +509,22 @@ response example
 ```
 
 ### await .move()
+
 ```ts
-await sftpClient.move( filepathFrom: string, filepathTo?: string ) 
+await sftpClient.move( filepathFrom: string, filepathTo?: string )
   => Promise<OSFtpFileResponse>;
 
 export type OSFtpFileResponse =
   | SResponseOKObject<OSFtpFileObject>
   | SResponseKOObject<OSFtpFileError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   filename: string;
   filepath: string;
 }
 
-interface SResponseKOObject { 
+interface SResponseKOObject {
   status: false;
   error: {
     msg: string;
@@ -552,21 +563,22 @@ sftpClient.disconnect();
 ```
 
 ### await .delete()
+
 ```ts
-await sftpClient.delete( filepathFrom: string, strict?: boolean ) 
+await sftpClient.delete( filepathFrom: string, strict?: boolean )
   => Promise<OSFtpFileResponse>;
 
 export type OSFtpFileResponse =
   | SResponseOKObject<OSFtpFileObject>
   | SResponseKOObject<OSFtpFileError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   filename: string;
   filepath: string;
 }
 
-interface SResponseKOObject { 
+interface SResponseKOObject {
   status: false;
   error: {
     msg: string;
@@ -605,22 +617,23 @@ sftpClient.disconnect();
 ```
 
 ### await .exists()
+
 ```ts
-await sftpClient.exists( filepathFrom: string, disconnectWhenError?: boolean ) 
+await sftpClient.exists( filepathFrom: string, disconnectWhenError?: boolean )
   => Promise<OSFtpExistResponse>;
 
 export type OSFtpExistResponse =
   | SResponseOKObject<OSFtpExistObject>
   | SResponseKOObject<OSFtpExistError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   filename: string;
   filepath: string;
   type: string;
 }
 
-interface SResponseKOObject { 
+interface SResponseKOObject {
   status: false;
   error: {
     msg: string;
@@ -660,21 +673,22 @@ sftpClient.disconnect();
 ```
 
 ### await .mkdir()
+
 ```ts
-await sftpClient.mkdir( folder, recursive?: boolean, strict?: boolean ) 
+await sftpClient.mkdir( folder, recursive?: boolean, strict?: boolean )
   => Promise<OSFtpFolderResponse>;
 
 export type OSFtpFolderResponse =
   | SResponseOKObject<OSFtpFolderObject>
   | SResponseKOObject<OSFtpFolderError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   foldername: string;
   folderpath: string;
 }
 
-interface SResponseKOObject { 
+interface SResponseKOObject {
   status: false;
   error: {
     msg: string;
@@ -715,21 +729,22 @@ sftpClient.disconnect();
 ```
 
 ### await .rmdir()
+
 ```ts
-await sftpClient.rmdir( folder, recursive?: boolean, strict?: boolean ) 
+await sftpClient.rmdir( folder, recursive?: boolean, strict?: boolean )
   => Promise<OSFtpFolderResponse>;
 
 export type OSFtpFolderResponse =
   | SResponseOKObject<OSFtpFolderObject>
   | SResponseKOObject<OSFtpFolderError>;
 
-interface SResponseOKObject { 
+interface SResponseOKObject {
   status: true;
   foldername: string;
   folderpath: string;
 }
 
-interface SResponseKOObject { 
+interface SResponseKOObject {
   status: false;
   error: {
     msg: string;
@@ -775,9 +790,9 @@ If you want to run `npm run test` in local, first you need to run a sftp server 
 
 ```bash
 # 'atmoz/sftp:alpine' is smaller and faster
-> docker run --name oro-sftp-server -p 2222:22 -d atmoz/sftp:alpine -e osftp_user:osftp_pass:::osftp_folder 
+> docker run --name oro-sftp-server -p 2222:22 -d atmoz/sftp:alpine -e osftp_user:osftp_pass:::osftp_folder
 # change the login-folder to have full privileges in main folder
-> docker exec oro-sftp-server sh -c "sed -i -e 's#ForceCommand internal-sftp#ForceCommand internal-sftp -d /osftp_folder#' /etc/ssh/sshd_config" 
+> docker exec oro-sftp-server sh -c "sed -i -e 's#ForceCommand internal-sftp#ForceCommand internal-sftp -d /osftp_folder#' /etc/ssh/sshd_config"
 # restart container
 > docker restart oro-sftp-server
 ```
