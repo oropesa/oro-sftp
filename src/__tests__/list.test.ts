@@ -19,6 +19,7 @@ afterAll(async () => {
   await ftpClient.rmdir(FTP_FOLDER, true);
   await ftpClient.disconnect();
 });
+
 //
 
 describe('list OSFtp', () => {

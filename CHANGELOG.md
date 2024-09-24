@@ -1,10 +1,35 @@
+## 2.1.1 / 2024-09-24
+
+- Apply `prettier --write` in the whole project (with `endOfLine: 'lf'`).
+- Fix eslint `@typescript-eslint/no-unused-expressions` rule in code.
+- Update `eslint` _breakpoint version_ (v8 to v9).
+- Update typescript _target_ to `ES2020`.
+- Updated libs:
+  - `oro-functions-client` from `v2.3.1` to `v2.3.2`.
+  - `ssh2-sftp-client` from `v10.0.3` to `v11.0.0`.
+- Updated _dev_ libs:
+  - `@babel/core` from `v7.24.9` to `v7.25.2`.
+  - `@babel/preset-env` from `v7.24.8` to `v7.25.4`.
+  - `@eslint/js` from `v9.7.0` to `v9.11.1`.
+  - `@types/jest` from `v29.5.12` to `v29.5.13`.
+  - `@types/ssh2-sftp-client` from `v9.0.3` to `v9.0.4`.
+  - `eslint` from `v8.57.0` to `v9.11.1`.
+  - `eslint-plugin-jest` from `v28.6.0` to `v28.8.3`.
+  - `eslint-plugin-unicorn` from `v54.0.0` to `v55.0.0`.
+  - `globals` from `v15.8.0` to `v15.9.0`.
+  - `husky` from `v9.1.1` to `v9.1.6`.
+  - `nodemon` from `v3.1.4` to `v3.1.7`.
+  - `tsup` from `v8.2.2` to `v8.3.0`.
+  - `typescript-eslint` from `v7.17.0` to `v8.7.0`.
+
 ## 2.1.0 / 2024-07-23
+
 - Re-init `package-lock.json`.
 - Added _coverage_ for testing.
 - Added _watcher_ for coding.
 - Updated _eslint_ to flat `eslint.config.js`.
 - Improved `OSftp.list` to return always a sortened list by name.
-- Improved _github cicd_ adding sftp-server for testing.
+- Improved _github cicd_ adding a sftp-server as a service for testing.
 - Improved _github cicd_ replacing `actions/--@v3` by `actions/--@v4`, and replacing `npm install` to `npm ci`.
 - Improved `export` declarations in index files.
 - Enhanced _linter_ adding some extensions.
@@ -42,6 +67,7 @@
   - `eslint-config-alloy` removed.
 
 ## 2.0.2 / 2023-11-02
+
 - Fixed _github action_ `npm_publish_on_pr_merge_to_master`.
 - Updated libs:
   - `fs-extra` to `v11.1.1`.
@@ -62,10 +88,12 @@
   - `@nearst/ftp`.
 
 ## 2.0.1 / 2023-11-02
+
 - Updated _dev_ libs:
   - `@types/ssh2-sftp-client` to `v9.0.2`.
 
 ## 2.0.0 / 2023-11-02
+
 **NOTE:**<br>
 ⚠️ It's not valid anymore:<br>`const OSFtp = require('oro-sftp')`,<br>
 ✔️ use the following instead:<br>`const { OSFtp } = require('oro-sftp')`
@@ -93,6 +121,7 @@
   - `jest` to `v29.7.0`.
 
 ## 1.1.0 / 2023-07-04
+
 - Added `TS` support.
 - Added _ts tests_.
 - Added `package-lock.json`.
@@ -106,10 +135,12 @@
 - Updated lib-dev `jest` to `v29.5.0`.
 
 ## 1.0.3 / 2022-06-21
+
 - Updated lib `oro-functions` to `v1.1.7`.
 - Updated lib-dev `jest` to `v28.1.1`.
 
 ## 1.0.0 / 2022-05-26
+
 - Added `MIT License`.
 - Added _unit testing_ `Jest`.
 - Added _package_ in `github.com` & `npmjs.com`.
@@ -117,26 +148,32 @@
 - Updated lib `ssh2-sftp-client` to `^v8.1.0`.
 
 ## 0.1.3 / 2021-12-13
+
 - Updated lib `oro-functions` to `v1.0.2`.
 - Updated lib `ssh2-sftp-client` to `v7.1.0`.
 
 ## 0.1.2 / 2021-11-30
+
 - Updated lib `ssh2-sftp-client` to `v7.1.0`.
 
 ## 0.1.1 / 2021-11-16
+
 - Update `oro-functions` to _v1.0.1_.
 
 ## 0.1.0 / 2021-06-18
+
 - Added methods `list`, `move`, `delete`, `exists`, `mkdir`, `rmdir`.
 - Fixed `readme.md information` and _error object_ of `upload`, `download`, `disconnect`.
 - Updated lib `oro-functions`.
 
 ## 0.0.3 / 2021-05-07
+
 - Fixed _constructor_ `param:config`.
 - Fixed _constructor_ `param:config.user` is changed by `param:config.username`.
 - Fixed avoid `tryAgain` when _connect_ failed by _wrong username_.
 
 ## 0.0.2 / 2021-05-07
+
 - Added changelog.
 - Fixed _constructor_ `param:config`.
 - Updated npm `oro-functions` to `v0.9.1`.

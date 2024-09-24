@@ -11,40 +11,41 @@ jobs:
     services:
       sftpserver:
         image: atmoz/sftp:alpine
+        env:
+          SFTP_USERS: '${{ secrets.TEST_SFTP_USER }}:${{ secrets.TEST_SFTP_PASSWORD }}:::${{ secrets.TEST_SFTP_FOLDER }}'
         ports:
           - 2222:22
-        options: -e SFTP_USERS=osftp_user:osftp_pass:::osftp_folder
 
     steps:
-      - name: "Checkout Code"
+      - name: 'Checkout Code'
         uses: actions/checkout@v4
 
-      - name: "Install Node.js and jq"
+      - name: 'Install Node.js and jq'
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: "Prepare Sftp Server docker"
+      - name: 'Prepare Sftp Server docker'
         env:
           FOLDER: ${{ secrets.TEST_SFTP_FOLDER }}
         run: |
           docker exec $(docker ps -q --filter "ancestor=atmoz/sftp:alpine") sh -c "sed -i -e 's#ForceCommand internal-sftp#ForceCommand internal-sftp -d /${{ env.FOLDER }}#' /etc/ssh/sshd_config"
 
-      - name: "Init Sftp Server docker"
+      - name: 'Init Sftp Server docker'
         run: |
           docker restart $(docker ps -q --filter "ancestor=atmoz/sftp:alpine")
           sleep 2
 
-      - name: "Install Dependencies"
+      - name: 'Install Dependencies'
         run: npm ci
 
-      - name: "Run Build"
+      - name: 'Run Build'
         run: npm run build
 
-      - name: "Run Linter"
+      - name: 'Run Linter'
         run: npm run lint
 
-      - name: "Create config file"
+      - name: 'Create config file'
         env:
           HOST: ${{ secrets.TEST_SFTP_HOST }}
           PORT: ${{ secrets.TEST_SFTP_PORT }}
@@ -53,27 +54,27 @@ jobs:
         run: |
           echo '{ "host": "${{ env.HOST }}", "port": "${{ env.PORT }}", "user": "${{ env.USER }}", "password": "${{ env.PASS }}" }' > src/__tests__/config.json
 
-      - name: "Run Tests"
+      - name: 'Run Tests'
         run: npm run test
 
   project_version:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout Code"
+      - name: 'Checkout Code'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: "Install Node.js and jq"
+      - name: 'Install Node.js and jq'
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: "Get Version from package.json"
+      - name: 'Get Version from package.json'
         id: get_version
         run: echo "version=$(jq -r .version ./package.json)" >> $GITHUB_OUTPUT
 
-      - name: "Check if Tag Exists"
+      - name: 'Check if Tag Exists'
         run: |
           if [ $(git tag -l "v${{ steps.get_version.outputs.version }}") ]; then
             echo "::error::Tag v${{ steps.get_version.outputs.version }} already exists." && exit 1

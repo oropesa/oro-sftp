@@ -92,9 +92,7 @@ export class OSFtp {
       .catch((error: SFTPError) => {
         const { msg, code } = getMsgAndCodeByError(error);
         const message = msg.replace('connect: ', '');
-        const sanitizeCode = msg.includes('Timed out while waiting for handshake')
-          ? 'ENTIMEOUT'
-          : (String(code) as OSFtpErrorCode);
+        const sanitizeCode = msg.includes('Timed out while waiting for handshake') ? 'ENTIMEOUT' : code;
         const tryAgain = msg !== 'Invalid username';
 
         return Ofn.setResponseKO(
@@ -119,7 +117,9 @@ export class OSFtp {
     }
 
     if (!(await pathExists(filepathOrigin))) {
-      this.#config!.disconnectWhenError && (await this.disconnect());
+      if (this.#config!.disconnectWhenError) {
+        this.disconnect();
+      }
       return Ofn.setResponseKO(`SFTP Upload failed: File (From) to upload not exist.`, {
         filepathFrom: filepathOrigin,
         filepathTo: filepathDestiny,
@@ -136,7 +136,9 @@ export class OSFtp {
         });
       })
       .catch((error: SFTPError) => {
-        this.#config!.disconnectWhenError && this.disconnect();
+        if (this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
         const { msg, code } = getMsgAndCodeByError(error);
         const message = msg.replace('_put: ', '').replace('Write stream error: ', '');
         return Ofn.setResponseKO(`SFTP Upload failed: ${message}.`, {
@@ -163,7 +165,9 @@ export class OSFtp {
     }
 
     if (!(await pathExists(Ofn.getFolderByPath(filepathDestiny)))) {
-      this.#config!.disconnectWhenError && (await this.disconnect());
+      if (this.#config!.disconnectWhenError) {
+        this.disconnect();
+      }
       return Ofn.setResponseKO(`SFTP Download failed: Folder (From) to download not exist.`, {
         filepathFrom,
         filepathTo: filepathDestiny,
@@ -180,7 +184,9 @@ export class OSFtp {
         });
       })
       .catch((error: SFTPError) => {
-        this.#config!.disconnectWhenError && this.disconnect();
+        if (this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
         const { msg, code } = getMsgAndCodeByError(error);
         const message = msg.replace('get: ', '');
         return Ofn.setResponseKO(`SFTP Download failed: ${message}.`, {
@@ -200,8 +206,12 @@ export class OSFtp {
     };
 
     let listFolder = folder ? folder : '/';
-    listFolder && listFolder[0] === '/' && (listFolder = `.${folder}`);
-    listFolder && listFolder.slice(-1) !== '/' && (listFolder += '/');
+    if (listFolder && listFolder[0] === '/') {
+      listFolder = `.${folder}`;
+    }
+    if (listFolder && listFolder.slice(-1) !== '/') {
+      listFolder += '/';
+    }
 
     const folderPath = listFolder.indexOf('./') === 0 ? listFolder.slice(2) : listFolder;
 
@@ -253,7 +263,9 @@ export class OSFtp {
         return Ofn.setResponseOK({ count: list.length, list });
       })
       .catch((error: SFTPError) => {
-        this.#config!.disconnectWhenError && this.disconnect();
+        if (this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
         const { msg, code } = getMsgAndCodeByError(error);
         return Ofn.setResponseKO(`SFTP List failed: ${msg}.`, {
           folder: listFolder,
@@ -282,7 +294,9 @@ export class OSFtp {
         });
       })
       .catch((error: SFTPError) => {
-        this.#config!.disconnectWhenError && this.disconnect();
+        if (this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
         const { msg, code } = getMsgAndCodeByError(error);
         return Ofn.setResponseKO(`SFTP Move failed: ${msg.replace('_rename: ', '')}.`, {
           filepathFrom,
@@ -334,7 +348,9 @@ export class OSFtp {
               });
         }
 
-        this.#config!.disconnectWhenError && (await this.disconnect());
+        if (this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
 
         if (msg === "TypeCannot read properties of undefined (reading 'unlink')") {
           msg = `FtpConnectionError: connection status is not yet connected`;
@@ -349,7 +365,7 @@ export class OSFtp {
       });
   }
 
-  public async exists(filepathFrom: string): Promise<OSFtpExistResponse> {
+  public async exists(filepathFrom: string, disconnectWhenError?: boolean): Promise<OSFtpExistResponse> {
     const checkResponse = this.#checkFtpConfig('Exists');
     if (!checkResponse.status) {
       return Ofn.setResponseKO(checkResponse.error.msg, {
@@ -374,8 +390,14 @@ export class OSFtp {
               code: 'ENOENT' as OSFtpErrorCode,
             });
       })
-      .catch((error: SFTPError) => {
-        this.#config!.disconnectWhenError && this.disconnect();
+      .catch(async (error: SFTPError) => {
+        if (Ofn.isBoolean(disconnectWhenError) && disconnectWhenError) {
+          await this.disconnect();
+        }
+        if (!Ofn.isBoolean(disconnectWhenError) && this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
+
         const { msg, code } = getMsgAndCodeByError(error);
         return Ofn.setResponseKO(`SFTP Exists failed: ${msg}.`, {
           filepath: filepathFrom,
@@ -395,7 +417,9 @@ export class OSFtp {
     }
 
     if (!folder) {
-      this.#config!.disconnectWhenError && (await this.disconnect());
+      if (this.#config!.disconnectWhenError) {
+        this.disconnect();
+      }
       return Ofn.setResponseKO(`SFTP Mkdir failed: param folder is required.`, { folder });
     }
 
@@ -405,7 +429,9 @@ export class OSFtp {
     const exists = await this.exists(dirFolder);
     if (exists.status && exists.type === 'd') {
       if (strict) {
-        this.#config!.disconnectWhenError && (await this.disconnect());
+        if (this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
         return Ofn.setResponseKO(`SFTP Mkdir failed: Folder already exists.`, {
           folder: dirFolder,
           code: 'EEXIST',
@@ -422,7 +448,9 @@ export class OSFtp {
       .mkdir(dirFolder, recursive)
       .then(() => Ofn.setResponseOK({ folderpath, foldername: Ofn.getFilenameByPath(dirFolder) }))
       .catch((error: SFTPError) => {
-        this.#config!.disconnectWhenError && this.disconnect();
+        if (this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
         const { msg, code } = getMsgAndCodeByError(error);
         const message = msg.replace('mkdir: ', '').replace('_doMkdir: ', '');
         return Ofn.setResponseKO(`SFTP Mkdir failed: ${message}.`, { folder: dirFolder, code });
@@ -439,7 +467,9 @@ export class OSFtp {
     }
 
     if (!folder) {
-      this.#config!.disconnectWhenError && (await this.disconnect());
+      if (this.#config!.disconnectWhenError) {
+        this.disconnect();
+      }
       return Ofn.setResponseKO(`SFTP Rmdir failed: param folder is required.`, { folder });
     }
 
@@ -462,7 +492,9 @@ export class OSFtp {
             foldername: Ofn.getFilenameByPath(dirFolder),
           });
         }
-        this.#config!.disconnectWhenError && this.disconnect();
+        if (this.#config!.disconnectWhenError) {
+          this.disconnect();
+        }
 
         const message = msg.replace('rmdir: ', '');
         return Ofn.setResponseKO(`SFTP Rmdir failed: ${message}.`, {
@@ -512,9 +544,15 @@ export class OSFtp {
       delete this.#config.user;
     }
 
-    this.#config.readyTimeout === undefined && (this.#config.readyTimeout = 3000);
-    this.#config.retry_minTimeout === undefined && (this.#config.retry_minTimeout = this.#config.readyTimeout);
-    this.#config.disconnectWhenError === undefined && (this.#config.disconnectWhenError = true);
+    if (this.#config.readyTimeout === undefined) {
+      this.#config.readyTimeout = 3000;
+    }
+    if (this.#config.retry_minTimeout === undefined) {
+      this.#config.retry_minTimeout = this.#config.readyTimeout;
+    }
+    if (this.#config.disconnectWhenError === undefined) {
+      this.#config.disconnectWhenError = true;
+    }
   }
 }
 
