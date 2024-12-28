@@ -2,6 +2,7 @@ import Ofn from 'oro-functions';
 
 import type { OSFtpConfig } from '../OSftp.types';
 
+// eslint-disable-next-line unicorn/prefer-module
 export const DIRNAME = __dirname;
 
 export const FTPCONFIG_BAD: OSFtpConfig = {
