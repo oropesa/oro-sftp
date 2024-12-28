@@ -1,16 +1,26 @@
 # Oro Sftp
 
+- [Overview](#overview)
+- [Installation](#installation)
+- [Example](#example)
+- [Methods](#methods)
+- [Testing](#testing)
+
+## Overview
+
 OSftp Class is a wrapper of ssh2-sftp-client to simplify their use.
 
 [ssh2-sftp-client](https://www.npmjs.com/package/ssh2-sftp-client) is a SFTP client module for node.js that provides an asynchronous interface for communicating with a SFTP server.
 
 To have the same interface using FTP, you can utilize the OroFtp class available through [OroFtp](https://www.npmjs.com/package/oro-ftp)
 
+## Installation
+
 ```shell
 npm install oro-sftp
 ```
 
-Example:
+## Example
 
 ```js
 // mjs, ts
@@ -48,7 +58,6 @@ console.log(sftpUpload);
 - [await .exists()](#await-exists)
 - [await .mkdir()](#await-mkdir)
 - [await .rmdir()](#await-rmdir)
-- [Testing](#testing)
 
 ### Error Code List
 
@@ -790,15 +799,19 @@ If you want to run `npm run test` in local, first you need to run a sftp server 
 
 ```bash
 # 'atmoz/sftp:alpine' is smaller and faster
-> docker run --name oro-sftp-server -p 2222:22 -d atmoz/sftp:alpine -e osftp_user:osftp_pass:::osftp_folder
+> docker run -d --name ORO_SFTP_SERVER \
+    -p 2222:22 \
+    -e SFTP_USERS=osftp_user:osftp_pass:::osftp_folder \
+    atmoz/sftp:alpine
+
 # change the login-folder to have full privileges in main folder
-> docker exec oro-sftp-server sh -c "sed -i -e 's#ForceCommand internal-sftp#ForceCommand internal-sftp -d /osftp_folder#' /etc/ssh/sshd_config"
+> docker exec ORO_SFTP_SERVER sh -c "sed -i -e 's#ForceCommand internal-sftp#ForceCommand internal-sftp -d /osftp_folder#' /etc/ssh/sshd_config"
 # restart container
-> docker restart oro-sftp-server
+> docker restart ORO_SFTP_SERVER
 ```
 
-Then, you have to declare your own `./test/config.json`, <br>
-<small>You can _copypaste_ it from `./test/config-default.json`</small>
+Then, you have to declare your own `./src/__tests__/config.json`, <br>
+_(Note:_ you can copypaste it from `./src/__tests__/config-default.json`._)_
 
 ```json
 {
