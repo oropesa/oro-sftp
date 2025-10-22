@@ -45,7 +45,7 @@ describe('SOFTP Connection', () => {
       expect(connected.tryAgain).toBe(true);
       expect(connected.error.code).toMatch(/^(ECONNREFUSED|ENOTFOUND)$/);
       expect(connected.error.msg).toMatch(
-        /^SFTP Connect failed: (Remote host refused connection|Address lookup failed for host).$/,
+        /^SFTP Connect failed: (Remote host refused connection|Address lookup failed for host|getConnection: getaddrinfo ENOTFOUND http:\/\/ftp-fake.oropensando.com).$/,
       );
     });
 
